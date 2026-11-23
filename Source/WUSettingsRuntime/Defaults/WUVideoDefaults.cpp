@@ -3,8 +3,9 @@
 #include "WUSettingsRuntime/SettingsCore/WUSettingDescriptor.h"
 #include "WUSettingsRuntime/SettingsCore/WUSettingsRegistry.h"
 #include "WUSettingsRuntime/Video/WUVideoTypes.h"
+#include "WUSettingsRuntime/Defaults/WUSettingsDefaults.h"
 
-static void RegisterVideoSettings()
+void WUSettingsDefaults::RegisterVideoSettings()
 {
 	//Resolution
 	FWUSettingDescriptor Descriptor;
@@ -65,12 +66,3 @@ static void RegisterVideoSettings()
 		FWUSettingsRegistry::Get().RegisterSetting(Desc);
 	}
 }
-
-// Auto registration
-static struct FWUVideoSettingsAutoRegister
-{
-	FWUVideoSettingsAutoRegister()
-	{
-		RegisterVideoSettings();
-	}
-} GRegisterVideoSettings;

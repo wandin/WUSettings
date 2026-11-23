@@ -2,6 +2,8 @@
 
 #include "WUSettingsRegistry.h"
 
+#include "WUSettingsRuntime/Logging/WUSettingsLog.h"
+
 FWUSettingsRegistry& FWUSettingsRegistry::Get()
 {
 	static FWUSettingsRegistry Instance;
@@ -10,13 +12,43 @@ FWUSettingsRegistry& FWUSettingsRegistry::Get()
 
 void FWUSettingsRegistry::RegisterSetting(const FWUSettingDescriptor& Descriptor)
 {
+	if (Descriptor.SettingName.IsNone())
+	{
+		UE_LOG(LogWUSettings, Error, TEXT("RegisterSetting: descritor without SettingName was ignored"));
+		return;
+	}
+
+	if (Descriptor.DefaultValue.Type != Descriptor.Type)
+	{
+		UE_LOG(LogWUSettings, Error, TEXT("RegisterSetting: '%s' DefaultValue type does not match descriptor Type, ignored"), *Descriptor.SettingName.ToString());
+		return;
+	}
+
+	FWUSettingDescriptor* Existing = Settings.FindByPredicate(
+		[&Descriptor](const FWUSettingDescriptor& Other)
+		{
+			return Other.SettingName == Descriptor.SettingName;
+		});
+
+	if (Existing)
+	{
+		UE_LOG(LogWUSettings, Log, TEXT("RegisterSetting: '%s' already registered, overriding"), *Descriptor.SettingName.ToString());
+		*Existing = Descriptor;
+		return;
+	}
+
 	Settings.Add(Descriptor);
+}
+
+void FWUSettingsRegistry::Reset()
+{
+	Settings.Reset();
 }
 
 const FWUSettingDescriptor* FWUSettingsRegistry::FindSetting(FName SettingName) const
 {
 	return Settings.FindByPredicate(
-		[&](const FWUSettingDescriptor& Descriptor)
+		[SettingName](const FWUSettingDescriptor& Descriptor)
 		{
 			return Descriptor.SettingName == SettingName;
 		});

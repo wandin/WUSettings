@@ -24,3 +24,8 @@ IWUSettingApplier* FWUSettingsApplierRegistry::FindApplier(const FWUSettingDescr
 	}
 	return nullptr;
 }
+
+void FWUSettingsApplierRegistry::Reset()
+{
+	Appliers.Reset();
+}

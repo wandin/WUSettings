@@ -24,13 +24,13 @@ struct FWUSettingDescriptor
 	FText Description;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EWUSettingCategory Category;
+	EWUSettingCategory Category = EWUSettingCategory::Audio;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EWUSettingType Type;
+	EWUSettingType Type = EWUSettingType::Bool;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EWUSettingApplyStrategy ApplyStrategy;
+	EWUSettingApplyStrategy ApplyStrategy = EWUSettingApplyStrategy::Immediate;
 
 	// Generic numeric constraints
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

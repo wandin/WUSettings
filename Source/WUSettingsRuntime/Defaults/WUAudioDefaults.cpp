@@ -2,9 +2,9 @@
 
 #include "WUSettingsRuntime/SettingsCore/WUSettingDescriptor.h"
 #include "WUSettingsRuntime/SettingsCore/WUSettingsRegistry.h"
+#include "WUSettingsRuntime/Defaults/WUSettingsDefaults.h"
 
-
-static void RegisterAudioSettings()
+void WUSettingsDefaults::RegisterAudioSettings()
 {
 	auto RegisterFloatVolume = [](FName Name, const TCHAR* Display, const TCHAR* Description)
 	{
@@ -48,12 +48,3 @@ static void RegisterAudioSettings()
 		TEXT("UI Volume"),
 		TEXT("Controls user interface audio volume."));
 }
-
-// Static auto-registration
-static struct FWUAudioSettingsAutoRegister
-{
-	FWUAudioSettingsAutoRegister()
-	{
-		RegisterAudioSettings();
-	}
-} GRegisterAudioSettings;

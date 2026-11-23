@@ -11,6 +11,9 @@ public:
 	void RegisterApplier(TUniquePtr<IWUSettingApplier> Applier);
 	IWUSettingApplier* FindApplier(const FWUSettingDescriptor& Descriptor);
 
+	// Removes all registered appliers (module shutdown).
+	void Reset();
+
 private:
 
 	FWUSettingsApplierRegistry() = default;
