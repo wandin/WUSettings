@@ -1,4 +1,6 @@
-﻿#include "WUSettingsEditor.h"
+﻿// Copyright (c) 2026 Wanderson Lopes. All rights reserved.
+
+#include "WUSettingsEditor.h"
 
 #define LOCTEXT_NAMESPACE "FWUSettingsEditorModule"
 

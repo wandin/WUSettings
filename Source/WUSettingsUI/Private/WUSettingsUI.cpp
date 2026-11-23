@@ -1,4 +1,6 @@
-﻿#include "WUSettingsUI.h"
+﻿// Copyright (c) 2026 Wanderson Lopes. All rights reserved.
+
+#include "WUSettingsUI.h"
 
 #define LOCTEXT_NAMESPACE "FWUSettingsUIModule"
 

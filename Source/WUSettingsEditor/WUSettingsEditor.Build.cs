@@ -1,4 +1,6 @@
-﻿using UnrealBuildTool;
+﻿// Copyright (c) 2026 Wanderson Lopes. All rights reserved.
+
+using UnrealBuildTool;
 
 public class WUSettingsEditor : ModuleRules
 {

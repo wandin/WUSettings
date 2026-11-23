@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Copyright (c) 2026 Wanderson Lopes. All rights reserved.
+
+#pragma once
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
