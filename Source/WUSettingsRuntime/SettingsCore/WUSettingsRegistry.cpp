@@ -59,7 +59,7 @@ const TArray<FWUSettingDescriptor>& FWUSettingsRegistry::GetAllSettings() const
 	return Settings;
 }
 
-bool FWUSettingsRegistry::GetDefaultValue(FName SettingName, FWUSettingValue& OutValue)
+bool FWUSettingsRegistry::GetDefaultValue(FName SettingName, FWUSettingValue& OutValue) const
 {
 	if (const FWUSettingDescriptor* Descriptor = FindSetting(SettingName))
 	{

@@ -19,7 +19,7 @@ public:
 	
 	const FWUSettingDescriptor* FindSetting(FName SettingName) const;
 	const TArray<FWUSettingDescriptor>& GetAllSettings() const;
-	bool GetDefaultValue(FName SettingName, FWUSettingValue& OutValue);
+	bool GetDefaultValue(FName SettingName, FWUSettingValue& OutValue) const;
 
 private:
 

@@ -36,26 +36,26 @@ void FWUAudioSettingApplier::EnsureLoaded()
 	}
 	UE_LOG(LogWUSettingsAudio, Log, TEXT("WUAudio: AudioApplierConfig loaded"));
 
-	ConfigAsset = LoadedConfig;
+	ConfigAsset.Reset(LoadedConfig);
 	CachedClasses.Reset();
 
 	if (USoundMix* LoadedMix = LoadedConfig->SoundMix.LoadSynchronous())
 	{
-		Mix = LoadedMix;
+		Mix.Reset(LoadedMix);
 	}
 
 	for (const FWUAudioSettingSoundClassMap& Map : LoadedConfig->Maps)
 	{
 		if (USoundClass* SoundClass = Map.SoundClass.LoadSynchronous())
 		{
-			CachedClasses.Add(Map.SettingName, SoundClass);
+			CachedClasses.Add(Map.SettingName, TStrongObjectPtr<USoundClass>(SoundClass));
 		}
 	}
 }
 
 USoundClass* FWUAudioSettingApplier::ResolveSoundClass(FName SettingName)
 {
-	if (const TWeakObjectPtr<USoundClass>* FoundClass = CachedClasses.Find(SettingName))
+	if (const TStrongObjectPtr<USoundClass>* FoundClass = CachedClasses.Find(SettingName))
 	{
 		return FoundClass->Get();
 	}
@@ -82,17 +82,20 @@ void FWUAudioSettingApplier::Apply(UWorld* World, const FWUSettingDescriptor& De
 
 	const float Volume = FMath::Clamp(Value.FloatValue, 0.0f, 1.0f);
 
-	// 1️⃣ Apply override FIRST
+	// Overrides on an active mix update live; the mix only needs to be pushed once per world.
 	UGameplayStatics::SetSoundMixClassOverride(
 		World,
 		SoundMix,
 		SoundClass,
 		Volume,
-		1.0f,                 // Pitch
+		1.0f,               // Pitch
 		Config->FadeInTime,
-		true                  // Apply to children
+		true                // Apply to children
 	);
 
-	// 2️⃣ Force engine to re-evaluate the mix
-	UGameplayStatics::PushSoundMixModifier(World, SoundMix);
+	if (MixPushedWorld.Get() != World)
+	{
+		UGameplayStatics::PushSoundMixModifier(World, SoundMix);
+		MixPushedWorld = World;
+	}
 }

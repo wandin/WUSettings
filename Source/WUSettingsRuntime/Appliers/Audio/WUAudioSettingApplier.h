@@ -3,6 +3,7 @@
 #pragma once
 
 #include "WUSettingsRuntime/Appliers/WUSettingApplier.h"
+#include "UObject/StrongObjectPtr.h"
 
 class UWUAudioApplierConfig;
 class USoundClass;
@@ -18,11 +19,11 @@ private:
 	void EnsureLoaded();
 	USoundClass* ResolveSoundClass(FName SettingName);
 	
-	TWeakObjectPtr<UWUAudioApplierConfig> ConfigAsset;
-	TWeakObjectPtr<USoundMix> Mix;
+	// Strong refs: this class isn't a UObject, so weak pointers could be garbage collected.
+	TStrongObjectPtr<UWUAudioApplierConfig> ConfigAsset;
+	TStrongObjectPtr<USoundMix> Mix;
+	TMap<FName, TStrongObjectPtr<USoundClass>> CachedClasses;
 
-	// Cache: SettingName -> SoundClass*
-	TMap<FName, TWeakObjectPtr<USoundClass>> CachedClasses;
-
-	bool bPushedMix = false;
+	// World where the mix was last pushed. Pushing on every Apply stacks modifiers.
+	TWeakObjectPtr<UWorld> MixPushedWorld;
 };

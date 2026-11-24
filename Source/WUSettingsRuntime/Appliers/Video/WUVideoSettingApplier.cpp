@@ -50,7 +50,8 @@ void FWUVideoSettingApplier::ApplyVSync(bool bEnabled)
 
 	// Toggle is already stored in GameUserSettings via cvar r.VSync
 	Settings->SetVSyncEnabled(bEnabled);
-	Settings->ApplySettings(false);
+	// Only non-resolution settings; resolution/window mode go through the ApplyConfirm flow.
+	Settings->ApplyNonResolutionSettings();
 	UE_LOG(LogWUSettingsVideo, Log, TEXT("WUVideo: Vsync set to %s"), bEnabled ? TEXT("Enabled") : TEXT("Disabled"));
 }
 
