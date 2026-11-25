@@ -26,18 +26,29 @@ Done:
 - Phase 1: migrated to UE 5.8 and renamed the core module to `WUSettingsRuntime`.
 - Phase 2: explicit registration in `StartupModule` (no static auto-registration), registry validation, `Reset()` on shutdown.
 - Phase 3: persistence fixed. `.sav` is written and loaded. Settings are re-applied on world BeginPlay through `UWUSettingsWorldSubsystem`. Values are validated and clamped. VSync uses `ApplyNonResolutionSettings`. The audio applier holds strong references and pushes the mix once per world.
+- Phase 4: Window Mode applier (`EWUWindowMode` translated to `EWindowMode`), Enum range validation, and the video `CanApply` now filters by category only. Window mode is skipped in PIE. The idempotency check compares against `GSystemResolution.WindowMode`, the actual window state. The mode is mirrored to GameUserSettings.ini through `ConfirmVideoMode` and `SaveSettings`.
 
 Registered settings (9):
 - `Audio.MasterVolume`, `MusicVolume`, `SFXVolume`, `VoiceVolume`, `UIVolume`: Float 0–1, default 1.0.
 - `Video.VSync`: Bool.
 - `Video.FOV`: Float 60–120, default 90.
-- `Video.WindowMode`, `Video.Resolution`: Enum, ApplyConfirm. These are placeholders with no applier yet.
+- `Video.WindowMode`: Enum 0–2 (Windowed/Borderless/Fullscreen), default Borderless, ApplyConfirm. It is applied immediately until Phase 7.
+- `Video.Resolution`: Enum placeholder with no applier yet.
+
+## Testing notes
+
+- Window mode and resolution can't be tested in PIE. Use **Standalone Game**.
+- The Standalone log does not appear in the editor Output Log. Add `-log` to Editor Preferences → Play → Additional Launch Parameters, or read `Saved/Logs/WUSettingsSample.log`.
+- The editor launches Standalone with `-windowed -ResX/-ResY`, so it always starts in a small window and switches to the saved mode on BeginPlay. Packaged builds start directly in the saved mode.
 
 ## Roadmap
 
 Next: **Video Display**, in this order:
-1. Window Mode (applier for `EWUWindowMode`).
+1. ~~Window Mode~~ (done in Phase 4).
 2. Resolution: add `FWUSettingValue::MakeResolution` and handle `EWUSettingType::Resolution`, replacing the Enum placeholder.
+   - The default is the native desktop resolution. GameUserSettings defaults to 1920×1080, which makes exclusive Fullscreen blurry on higher-resolution monitors.
+   - Borderless always uses the desktop resolution. Windowed and Fullscreen use the chosen one.
+   - Expose the list of supported resolutions for the UI.
 3. Refresh Rate.
 4. Apply/Confirm flow with timed Rollback, for `EWUSettingApplyStrategy::ApplyConfirm`.
 

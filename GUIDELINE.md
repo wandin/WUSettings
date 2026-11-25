@@ -40,7 +40,8 @@ World BeginPlay ──> UWUSettingsWorldSubsystem ──> ApplyAllRegisteredSett
 
 - **Value precedence:** descriptor default, then config, then SaveGame.
 - **Registration** happens explicitly in `FWUSettingsRuntimeModule::StartupModule`. Do not use static auto-registration objects. `ShutdownModule` resets both registries. Registering a name that already exists replaces it, which lets a project override plugin defaults.
-- **Validation:** unknown names and type mismatches are rejected with a Warning. Float and Int values are clamped to the descriptor's Min/Max. On load, saved entries whose name is unknown or whose type no longer matches are dropped.
+- **Validation:** unknown names and type mismatches are rejected with a Warning. Float and Int values are clamped to the descriptor's Min/Max. Enum values outside Min/Max are **rejected**, because clamping an enum would pick an arbitrary option, so Enum descriptors must set Min/Max to the valid index range. On load, saved entries whose name is unknown or whose value is invalid are dropped.
+- **Apply strategy vs applier:** `ApplyStrategy` (Immediate, ApplyConfirm, RequiresRestart) decides *when* a value is applied, which is the Subsystem's job. Appliers only know *how* to apply. Their `CanApply` filters by category or name, never by strategy.
 - **Saving:** every successful `SetSettingValue` saves, even when there is no world.
 - **Applying:** `UWUSettingsSubsystem::Initialize` only loads, because no world exists at that point. `UWUSettingsWorldSubsystem::OnWorldBeginPlay` applies everything, for Game and PIE worlds only.
 - **SaveGame versioning:** `UWUSettingSaveGame::CurrentVersion`. Migrations go in `LoadSettings`.
@@ -52,8 +53,11 @@ World BeginPlay ──> UWUSettingsWorldSubsystem ──> ApplyAllRegisteredSett
 - **Non-UObject classes that hold UObjects** use `TStrongObjectPtr`, or `TWeakObjectPtr` when they intentionally don't own them.
 - **Appliers:**
   - Each applier declares what it handles through `CanApply(Descriptor)`.
-  - `Apply` must be idempotent, because it runs on every world BeginPlay.
-  - Video appliers never call `UGameUserSettings::ApplySettings`. Use `ApplyNonResolutionSettings`, or the ApplyConfirm flow for resolution and window mode.
+  - `Apply` must be idempotent, because it runs on every world BeginPlay. Compare against the *actual* engine state (for example `GSystemResolution`), not a saved value, because command-line overrides can make them differ.
+  - Video appliers never call `UGameUserSettings::ApplySettings`. Use `ApplyNonResolutionSettings` or `ApplyResolutionSettings`.
+  - Display settings are mirrored to GameUserSettings.ini (`ConfirmVideoMode` + `SaveSettings`) so the engine starts in the right mode. The `.sav` stays the source of truth.
+  - Display settings are skipped in PIE, because they would affect the editor window. Test them in Standalone Game.
+- **Engine types stay out of the public API.** Expose our own enums (such as `EWUWindowMode`) and translate them to engine types inside the applier.
 - **Setting names** use the form `Category.Name`, for example `Audio.MasterVolume` or `Video.FOV`.
 - **Plugin Content** holds only shipping assets. Test assets live in the Sample project.
 
@@ -71,7 +75,7 @@ World BeginPlay ──> UWUSettingsWorldSubsystem ──> ApplyAllRegisteredSett
 
 ## Adding a new setting
 
-1. Register an `FWUSettingDescriptor` in the matching `Defaults/WU<Category>Defaults.cpp`. Set Name, DisplayName, Description, Category, Type, ApplyStrategy, Min/Max/Step for numeric types, and DefaultValue. The DefaultValue type must match Type.
+1. Register an `FWUSettingDescriptor` in the matching `Defaults/WU<Category>Defaults.cpp`. Set Name, DisplayName, Description, Category, Type, ApplyStrategy, Min/Max/Step for numeric and Enum types, and DefaultValue. The DefaultValue type must match Type.
 2. If no applier handles it, create `Appliers/<Category>/WU<Category>SettingApplier` and register it in `StartupModule`.
 3. Test with `WU_SetSetting <Name> <Value>` in PIE: the value applies, persists after restarting PIE, and an out-of-range value is clamped.
 

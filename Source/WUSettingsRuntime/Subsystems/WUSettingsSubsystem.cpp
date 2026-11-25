@@ -176,9 +176,16 @@ bool UWUSettingsSubsystem::SanitizeValue(const FWUSettingDescriptor& Descriptor,
 	case EWUSettingType::Int:
 		OutValue.IntValue = FMath::Clamp(InValue.IntValue, FMath::RoundToInt(Descriptor.MinValue), FMath::RoundToInt(Descriptor.MaxValue));
 		break;
-
+	case EWUSettingType::Enum:
+		// Enum descriptors must set MinValue/MaxValue to the valid index range.
+		// Out-of-range is rejected (not clamped): clamping an enum picks an arbitrary option.
+		if (InValue.EnumValue < FMath::RoundToInt(Descriptor.MinValue) || InValue.EnumValue > FMath::RoundToInt(Descriptor.MaxValue))
+		{
+			return false;
+		}
+		break;
 	default:
-		// Bool / Enum / Resolution: nothing to clamp here (enum range is the applier's job).
+		// Bool / Resolution: nothing to validate here.
 		break;
 	}
 	return true;

@@ -27,7 +27,10 @@ void WUSettingsDefaults::RegisterVideoSettings()
 		Desc.Category     = EWUSettingCategory::Video;
 		Desc.Type         = EWUSettingType::Enum;
 		Desc.ApplyStrategy = EWUSettingApplyStrategy::ApplyConfirm;
+		Desc.MinValue     = 0.f;
+		Desc.MaxValue     = static_cast<float>(EWUWindowMode::Fullscreen); // last enum value
 
+		Desc.Step        = 1.f;
 		Desc.DefaultValue = FWUSettingValue::MakeEnum(
 			static_cast<uint8>(EWUWindowMode::Borderless));
 

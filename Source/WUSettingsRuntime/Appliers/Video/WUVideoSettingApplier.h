@@ -13,4 +13,6 @@ public:
 private:
 	void ApplyVSync(bool bEnabled);
 	void ApplyFOV(UWorld* World, float FOV);
+
+	void ApplyWindowMode(UWorld*  World, int32 ModeIndex);
 };
