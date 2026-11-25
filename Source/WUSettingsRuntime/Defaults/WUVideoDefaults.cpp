@@ -8,16 +8,19 @@
 void WUSettingsDefaults::RegisterVideoSettings()
 {
 	//Resolution
-	FWUSettingDescriptor Descriptor;
-	Descriptor.SettingName = "Video.Resolution";
-	Descriptor.DisplayName = FText::FromString("Resolution");
-	Descriptor.Description = FText::FromString("Screen resolution");
-	Descriptor.Category = EWUSettingCategory::Video;
-	Descriptor.Type = EWUSettingType::Enum;
-	Descriptor.ApplyStrategy = EWUSettingApplyStrategy::ApplyConfirm;
-	Descriptor.DefaultValue = FWUSettingValue::MakeEnum(0);
-	FWUSettingsRegistry::Get().RegisterSetting(Descriptor);
+	{
+		FWUSettingDescriptor Desc;
+		Desc.SettingName = "Video.Resolution";
+		Desc.DisplayName  = FText::FromString("Resolution");
+		Desc.Description = FText::FromString("Screen resolution. Ignored in Borderless (always uses the desktop resolution).");
+		Desc.Category     = EWUSettingCategory::Video;
+		Desc.Type = EWUSettingType::Resolution;
+		Desc.ApplyStrategy = EWUSettingApplyStrategy::ApplyConfirm;
+		Desc.DefaultValue = FWUSettingValue::MakeNativeResolution();
 
+		FWUSettingsRegistry::Get().RegisterSetting(Desc);
+	}
+	
 	// Window Mode
 	{
 		FWUSettingDescriptor Desc;

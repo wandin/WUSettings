@@ -4,6 +4,7 @@
 
 #include "GameFramework/GameUserSettings.h"
 #include "WUSettingsRuntime/Logging/WUSettingsLog.h"
+#include "WUSettingsRuntime/Video/WUVideoResolutions.h"
 #include "WUSettingsRuntime/Video/WUVideoTypes.h"
 #include "UnrealEngine.h"
 
@@ -66,6 +67,17 @@ void FWUVideoSettingApplier::Apply(UWorld* World, const FWUSettingDescriptor& De
 		ApplyWindowMode(World, Value.EnumValue);
 		return;
 	}
+
+	if (Descriptor.SettingName == TEXT("Video.Resolution"))
+	{
+		if (Value.Type != EWUSettingType::Resolution)
+		{
+			UE_LOG(LogWUSettingsVideo, Warning, TEXT("WUVideo: Resolution setting must be resolution"));
+			return;
+		}
+		ApplyResolution(World, Value.ResolutionValue);
+		return;
+	}
 }
 
 void FWUVideoSettingApplier::ApplyVSync(bool bEnabled)
@@ -116,23 +128,63 @@ void FWUVideoSettingApplier::ApplyWindowMode(UWorld* World, int32 ModeIndex)
 		return;
 	}
 
-	const EWUWindowMode Mode = static_cast<EWUWindowMode>(ModeIndex);
-	const EWindowMode::Type Target = ToEngineWindowMode(Mode);
+	Settings->SetFullscreenMode(ToEngineWindowMode(static_cast<EWUWindowMode>(ModeIndex)));
+	ApplyDisplaySettings(Settings);
+}
 
-	// Compare against the *actual* window state, not the saved GameUserSettings value:
-	// command-line overrides (e.g. -windowed from the editor's Standalone launch) make them differ.
-	if (GSystemResolution.WindowMode == Target)
+void FWUVideoSettingApplier::ApplyResolution(UWorld* World, const FIntPoint& Resolution)
+{
+	if (World->WorldType == EWorldType::PIE)
+	{
+		UE_LOG(LogWUSettingsVideo, Log, TEXT("WUVideo: Resolution skipped in PIE (test in Standalone Game)"));
+		return;
+	}
+
+	UGameUserSettings* Settings = GEngine ? GEngine->GetGameUserSettings() : nullptr;
+	if (!Settings)
+	{
+		UE_LOG(LogWUSettingsVideo, Warning, TEXT("WUVideo: Failed to get GameUserSettings"));
+		return;
+	}
+
+	// (0,0) = native: resolve now, so it follows the current monitor.
+	const bool bNative = Resolution.X == 0 && Resolution.Y == 0;
+	Settings->SetScreenResolution(bNative ? Settings->GetDesktopResolution() : Resolution);
+	ApplyDisplaySettings(Settings);
+}
+
+void FWUVideoSettingApplier::ApplyDisplaySettings(UGameUserSettings* Settings)
+{
+	FIntPoint Resolution = Settings->GetScreenResolution();
+	const EWindowMode::Type Mode = Settings->GetFullscreenMode();
+
+	// Exclusive fullscreen only accepts modes the monitor supports; the engine silently ignores others.
+	// Fall back to the desktop resolution. The saved value is kept, so it's used again in Windowed.
+	if (Mode == EWindowMode::Fullscreen && !WUVideoResolutions::IsSupportedFullscreenResolution(Resolution))
+	{
+		const FIntPoint Desktop = Settings->GetDesktopResolution();
+		UE_LOG(LogWUSettingsVideo, Warning, TEXT("WUVideo: %dx%d is not a supported fullscreen mode; using desktop resolution %dx%d"),
+			Resolution.X, Resolution.Y, Desktop.X, Desktop.Y);
+
+		Resolution = Desktop;
+		Settings->SetScreenResolution(Resolution);
+	}
+
+	// Compare against the *actual* display state, not the saved one:
+	// command-line overrides (e.g. -windowed -ResX/-ResY from the editor) make them differ.
+	if (GSystemResolution.WindowMode == Mode &&
+		static_cast<int32>(GSystemResolution.ResX) == Resolution.X &&
+		static_cast<int32>(GSystemResolution.ResY) == Resolution.Y)
 	{
 		return;
 	}
 
-	Settings->SetFullscreenMode(Target);
 	Settings->ApplyResolutionSettings(false);
 
-	// Mirror to GameUserSettings.ini so the engine boots straight into this mode (no switch at startup).
+	// Mirror to GameUserSettings.ini so the engine boots straight into this state (no switch at startup).
 	// When the Apply/Confirm flow exists (Phase 7), ConfirmVideoMode moves to the confirm step.
 	Settings->ConfirmVideoMode();
 	Settings->SaveSettings();
 
-	UE_LOG(LogWUSettingsVideo, Log, TEXT("WUVideo: WindowMode set to %s"), *UEnum::GetValueAsString(Mode));
+	UE_LOG(LogWUSettingsVideo, Log, TEXT("WUVideo: Display set to %dx%d, mode %s"), Resolution.X, Resolution.Y, LexToString(Mode));
 }

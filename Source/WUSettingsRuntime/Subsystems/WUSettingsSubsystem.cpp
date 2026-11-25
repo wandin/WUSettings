@@ -184,8 +184,21 @@ bool UWUSettingsSubsystem::SanitizeValue(const FWUSettingDescriptor& Descriptor,
 			return false;
 		}
 		break;
+
+	case EWUSettingType::Resolution:
+		{
+			// (0,0) = native. Otherwise reject nonsense sizes; whether the monitor supports it is the applier's call.
+			const FIntPoint& Res = InValue.ResolutionValue;
+			const bool bNative = Res.X == 0 && Res.Y == 0;
+			if (!bNative && (Res.X < 640 || Res.Y < 360))
+			{
+				return false;
+			}
+		}
+		break;
+
 	default:
-		// Bool / Resolution: nothing to validate here.
+		// Bool: nothing to validate here.
 		break;
 	}
 	return true;

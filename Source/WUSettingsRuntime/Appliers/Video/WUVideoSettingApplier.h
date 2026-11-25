@@ -3,6 +3,7 @@
 #pragma once
 #include "WUSettingsRuntime/Appliers/WUSettingApplier.h"
 
+class UGameUserSettings;
 
 class FWUVideoSettingApplier : public IWUSettingApplier
 {
@@ -14,5 +15,12 @@ private:
 	void ApplyVSync(bool bEnabled);
 	void ApplyFOV(UWorld* World, float FOV);
 
+	/**
+	* Window mode and resolution each update their part in GameUserSettings,
+	* Then ApplyDisplaySettings applies the combined state once.
+	*/
 	void ApplyWindowMode(UWorld*  World, int32 ModeIndex);
+	void ApplyResolution(UWorld* World, const FIntPoint& Resolution);
+
+	void ApplyDisplaySettings(UGameUserSettings* Settings);
 };

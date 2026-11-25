@@ -26,6 +26,10 @@ struct FWUSettingValue
 	
 	UPROPERTY()
 	int32 EnumValue = 0;
+
+	// (0,0) = native desktop resolution, resolved when applied.
+	UPROPERTY()
+	FIntPoint ResolutionValue = FIntPoint::ZeroValue;
 	
 	static FWUSettingValue MakeBool(bool Value)
 	{
@@ -57,5 +61,18 @@ struct FWUSettingValue
 		Result.Type = EWUSettingType::Enum;
 		Result.EnumValue = Value;
 		return Result;
+	}
+
+	static FWUSettingValue MakeResolution(int32 Width, int32 Height)
+	{
+		FWUSettingValue Result;
+		Result.Type = EWUSettingType::Resolution;
+		Result.ResolutionValue = FIntPoint(Width, Height);
+		return Result;
+	}
+
+	static FWUSettingValue MakeNativeResolution()
+	{
+		return MakeResolution(0,0);
 	}
 };
