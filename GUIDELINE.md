@@ -23,7 +23,14 @@ Source/WUSettingsRuntime/
   Subsystems/      UWUSettingsSubsystem (GameInstance), UWUSettingsWorldSubsystem
   Video/           Video-specific types (EWUWindowMode) and WUVideoResolutions (supported modes, refresh rates)
   Public/ Private/ Module class only
+
+Source/WUSettingsUI/
+  Logging/         LogWUSettingsUI
+  Rows/            UWUSettingRow (base) and one subclass per control: Bool, Slider, Enum
+  Public/ Private/ Module class only
 ```
+
+**UI rows:** each row is an abstract C++ class whose controls are `BindWidget` members. Blueprint children only add layout and style. A row reads and writes through `UWUSettingsSubsystem` and refreshes on `OnSettingChanged`, so external changes (console, revert) show up. Programmatic control updates must not commit. Use setters that don't fire change events, or ignore `ESelectInfo::Direct`.
 
 Includes always use the module-rooted path: `#include "WUSettingsRuntime/SettingsCore/WUSettingsRegistry.h"`.
 
@@ -70,7 +77,7 @@ World BeginPlay ──> UWUSettingsWorldSubsystem ──> ApplyAllRegisteredSett
 - Always **`WUSettings...`** with uppercase WU, never `WuSettings`. Use the UE prefixes: `UWU`, `FWU`, `EWU`, `IWU`, `AWU`, plus `DA_WU` and `SC_` for assets.
 - Every source file starts with `// Copyright (c) 2026 Wanderson Lopes. All rights reserved.`
 - **Logging:**
-  - Use only `LogWUSettings`, `LogWUSettingsAudio`, `LogWUSettingsVideo` and `LogWUSettingsUI`. Never use `LogTemp`. Add a new category per domain when needed.
+  - Use only `LogWUSettings`, `LogWUSettingsAudio` and `LogWUSettingsVideo` (Runtime), plus `LogWUSettingsUI` (UI module). Never use `LogTemp`. Add a new category per domain when needed. Each module declares its own categories, because a category is not exported across modules.
   - `Error` means something is broken.
   - `Warning` means bad input was rejected.
   - `Log` means a normal lifecycle event.

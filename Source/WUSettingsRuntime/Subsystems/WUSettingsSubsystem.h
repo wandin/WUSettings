@@ -12,6 +12,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWUOnConfirmRequired, float, TimeoutSeconds);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FWUOnPendingResolved, bool, bConfirmed);
+// Native C++ event: SettingName whose value changed (set, or reverted).
+DECLARE_MULTICAST_DELEGATE_OneParam(FWUOnSettingChanged, FName);
 
 UCLASS()
 class WUSETTINGSRUNTIME_API UWUSettingsSubsystem : public UGameInstanceSubsystem
@@ -56,6 +58,9 @@ public:
 	// Broadcast when pending settings are confirmed (true) or reverted (false, including timeout).
 	UPROPERTY(BlueprintAssignable, Category="WUSettings")
 	FWUOnPendingResolved OnPendingResolved;
+
+	// Fired after a value is set or reverted, so UI rows can refresh.
+	FWUOnSettingChanged OnSettingChanged;
 
 private:
 	void LoadSettings();

@@ -8,7 +8,7 @@
 #include "WUSettingValue.generated.h"
 
 USTRUCT(BlueprintType)
-struct FWUSettingValue
+struct WUSETTINGSRUNTIME_API FWUSettingValue
 {
 	GENERATED_BODY()
 

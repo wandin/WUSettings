@@ -10,7 +10,7 @@
 
 
 USTRUCT(BlueprintType)
-struct FWUSettingDescriptor
+struct WUSETTINGSRUNTIME_API FWUSettingDescriptor
 {
 	GENERATED_BODY()
 
@@ -44,4 +44,9 @@ struct FWUSettingDescriptor
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FWUSettingValue DefaultValue;
+
+	// Enum only: display label per value (index == enum value). Should cover MinValue..MaxValue;
+	// missing labels fall back to the number.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FText> EnumOptions;
 };

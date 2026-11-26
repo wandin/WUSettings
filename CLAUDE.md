@@ -44,6 +44,17 @@ Done:
   - The countdown uses `FTSTicker` (real time), because world and GameInstance timers freeze while the game is paused.
   - The Blueprint API is `OnConfirmRequired(TimeoutSeconds)`, `OnPendingResolved(bConfirmed)`, `HasPendingConfirmation()` and `GetConfirmTimeRemaining()`.
   - The sample has `WU_Confirm` and `WU_Revert` Exec commands.
+- Phase 8: UI base (row widgets).
+  - Runtime: `FWUSettingDescriptor::EnumOptions`, where each label's index is the enum value. WindowMode fills it from the UENUM DisplayNames.
+  - Runtime: the native event `UWUSettingsSubsystem::OnSettingChanged(FName)` fires on set and on revert. `FWUSettingDescriptor` and `FWUSettingValue` are exported.
+  - Runtime: `LogWUSettingsUI` now lives in the UI module (`WUSettingsUI/Logging`). The UI module depends publicly on `WUSettingsRuntime`.
+  - UI rows (`WUSettingsUI/Rows`):
+    - `UWUSettingRow` (abstract base) binds by `SettingName` on construct, keeps a descriptor copy, and refreshes on `OnSettingChanged`.
+    - `UWUSettingRowBool` uses a `CheckBox`.
+    - `UWUSettingRowSlider` handles Float and Int with a `Slider` and an optional `ValueText`. It snaps to Step, previews while dragging, commits on release, and commits each keyboard/gamepad step.
+    - `UWUSettingRowEnum` uses a `ComboBox` and ignores `ESelectInfo::Direct`.
+    - Blueprint children only provide layout through `BindWidget`.
+  - Test widgets live in the Sample at `Content/WUSettingsTest/`: `WBP_TestRow*` and `WBP_TestSettings`, shown from the Level Blueprint.
 
 Registered settings (10):
 - `Audio.MasterVolume`, `MusicVolume`, `SFXVolume`, `VoiceVolume`, `UIVolume`: Float 0–1, default 1.0.
@@ -62,19 +73,25 @@ Registered settings (10):
 
 ## Roadmap
 
-Next: **Video Display**, in this order:
-1. ~~Window Mode~~ (done in Phase 4).
-2. ~~Resolution~~ (done in Phase 5).
-3. ~~Refresh Rate~~, which became Frame Rate Limit in Phase 6, since the monitor Hz can't be selected. The Phase 4 fullscreen blur was caused by a non-native resolution in exclusive fullscreen and is gone since Phase 5.
-4. ~~Apply/Confirm flow with timed Rollback~~ (done in Phase 7).
+Phases 1–8 are done. Phases 4–7 covered Video Display: Window Mode, Resolution, Frame Rate Limit, and Apply/Confirm.
 
-Next: pick from the list below. Video Display is complete, and `RequiresRestart` has no special handling yet.
-- **Gameplay:** FOV ownership. Apply on possess or on PlayerController ready, so it also works for network clients whose PC arrives after BeginPlay. Decide whether FOV belongs in Video or Gameplay.
-- **UI module** (`WUSettingsUI`, runtime UMG): C++ logic, Blueprint only for styling. Add a debounced save or an explicit Apply button, so sliders don't write the `.sav` on every tick.
-- **Remaining categories:** Graphics (scalability), Input (rebinding through EnhancedInput), Accessibility, Network, Developer.
-- **Editor module** (`WUSettingsEditor`): tooling, currently empty.
-- **Deferred audio:** output device, dynamic range, spatialization and occlusion.
-- **Fab readiness:** docs, sample content, README, version bump out of beta.
+The UI comes before the remaining categories. It is data-driven (rows are built from the Registry), so later settings appear in the menu automatically. Building it now also shows what the descriptors are missing.
+
+| Phase | Content |
+|---|---|
+| ~~8~~ | (Done) UI base. Runtime prep: Enum option labels in the descriptor, an `OnSettingChanged` event, API exports, and `LogWUSettingsUI` moved to the UI module. Row widgets: a base row plus Bool (checkbox), Slider (Float/Int; it commits on release, so the `.sav` isn't written on every tick) and Enum (combo box). |
+| **9 (next)** | UI screen. Resolution row (options depend on the window mode), a screen that builds rows per category from the Registry, the confirm popup with a countdown, and Reset to defaults. |
+| 10 | Graphics: overall quality preset, scalability groups, resolution scale. |
+| 11 | Gameplay: FOV applied on possess (works for network clients), mouse sensitivity and invert. Decide whether FOV belongs in Video or Gameplay. |
+| 12–13 | Input: rebinding through EnhancedInput (`UEnhancedInputUserSettings`) and the rebinding UI. |
+| 14 | Accessibility: subtitles, colorblind mode, text size. |
+| 15 | Network and Developer: stats and debug options. |
+| 16 | Editor module (`WUSettingsEditor`): tooling such as descriptor validation. |
+| 17 | Fab readiness: docs, sample content, README, version bump out of beta. |
+
+The order from Phase 10 on can change. Large blocks (UI, Input) may split into more phases.
+
+Deferred, with no phase yet: `RequiresRestart` handling, and audio output device, dynamic range, spatialization and occlusion.
 
 Known limitations and tech debt:
 - Int and Float descriptors must set `MinValue` and `MaxValue`. The defaults are 0–1 and values get clamped to that range.

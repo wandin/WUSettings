@@ -13,7 +13,8 @@ public class WUSettingsUI : ModuleRules
                 "Core",
                 "CoreUObject",
                 "Engine",
-                "UMG"
+                "UMG",
+                "WUSettingsRuntime"
             }
         );
 
@@ -23,7 +24,6 @@ public class WUSettingsUI : ModuleRules
                 "Slate",
                 "SlateCore",
                 "InputCore",
-                "WUSettingsRuntime"
             }
         );
     }

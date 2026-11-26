@@ -71,6 +71,8 @@ bool UWUSettingsSubsystem::SetSettingValue(FName SettingName, const FWUSettingVa
 		ApplySetting(World, *Descriptor, Sanitized);
 	}
 
+	OnSettingChanged.Broadcast(SettingName);
+
 	if (bNeedsConfirm)
 	{
 		StartConfirmTimer();
@@ -165,6 +167,7 @@ void UWUSettingsSubsystem::RevertPendingSettings()
 		{
 			ApplySetting(World, *Descriptor, Pair.Value);
 		}
+		OnSettingChanged.Broadcast(Pair.Key);
 	}
 
 	// The .sav never contained the pending values, so there is nothing to save.

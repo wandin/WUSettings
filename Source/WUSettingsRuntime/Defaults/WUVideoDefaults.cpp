@@ -36,6 +36,13 @@ void WUSettingsDefaults::RegisterVideoSettings()
 		Desc.Step = 1.f;
 		Desc.DefaultValue = FWUSettingValue::MakeEnum(static_cast<uint8>(EWUWindowMode::Borderless));
 
+		// Labels come from the UENUM DisplayNames, so they stay in sync with EWUWindowMode
+		const UEnum* WindowModeEnum = StaticEnum<EWUWindowMode>();
+		for (int32 Index = 0; Index <= static_cast<int32>(EWUWindowMode::Fullscreen); Index++)
+		{
+			Desc.EnumOptions.Add(WindowModeEnum->GetDisplayNameTextByIndex(Index));
+		}
+		
 		FWUSettingsRegistry::Get().RegisterSetting(Desc);
 	}
 
