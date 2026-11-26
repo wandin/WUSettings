@@ -222,7 +222,9 @@ void FWUVideoSettingApplier::ApplyDisplaySettings(UGameUserSettings* Settings)
 	Settings->ApplyResolutionSettings(false);
 
 	// Mirror to GameUserSettings.ini so the engine boots straight into this state (no switch at startup).
-	// When the Apply/Confirm flow exists (Phase 7), ConfirmVideoMode moves to the confirm step.
+	// Mirrored even while the change is pending confirmation: the applier doesn't know about the flow.
+	// If the game closes before confirming, it boots in this mode once and the .sav (source of truth)
+	// switches back on BeginPlay.
 	Settings->ConfirmVideoMode();
 	Settings->SaveSettings();
 

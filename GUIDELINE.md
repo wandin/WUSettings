@@ -42,7 +42,8 @@ World BeginPlay ──> UWUSettingsWorldSubsystem ──> ApplyAllRegisteredSett
 - **Registration** happens explicitly in `FWUSettingsRuntimeModule::StartupModule`. Do not use static auto-registration objects. `ShutdownModule` resets both registries. Registering a name that already exists replaces it, which lets a project override plugin defaults.
 - **Validation:** unknown names and type mismatches are rejected with a Warning. Float and Int values are clamped to the descriptor's Min/Max. Enum values outside Min/Max are **rejected**, because clamping an enum would pick an arbitrary option, so Enum descriptors must set Min/Max to the valid index range. On load, saved entries whose name is unknown or whose value is invalid are dropped.
 - **Apply strategy vs applier:** `ApplyStrategy` (Immediate, ApplyConfirm, RequiresRestart) decides *when* a value is applied, which is the Subsystem's job. Appliers only know *how* to apply. Their `CanApply` filters by category or name, never by strategy.
-- **Saving:** every successful `SetSettingValue` saves, even when there is no world.
+- **Saving:** a successful `SetSettingValue` saves right away for `Immediate` settings, even when there is no world. `ApplyConfirm` settings are applied but saved only on `ConfirmPendingSettings`, and they revert on `RevertPendingSettings` or on timeout. The `.sav` never contains unconfirmed values.
+- **Timers that must run while paused** (such as the confirm countdown) use `FTSTicker`, not the world or GameInstance `TimerManager`.
 - **Applying:** `UWUSettingsSubsystem::Initialize` only loads, because no world exists at that point. `UWUSettingsWorldSubsystem::OnWorldBeginPlay` applies everything, for Game and PIE worlds only.
 - **SaveGame versioning:** `UWUSettingSaveGame::CurrentVersion`. Migrations go in `LoadSettings`.
 

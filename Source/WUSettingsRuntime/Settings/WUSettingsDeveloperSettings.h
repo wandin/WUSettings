@@ -17,4 +17,9 @@ public:
 	// Audio
 	UPROPERTY(Config, EditAnywhere, Category="Audio")
 	TSoftObjectPtr<UWUAudioApplierConfig> AudioApplierConfig;
+
+	// Video
+	// Seconds the player has to confirm ApplyConfirm settings (window mode, resolution) before they revert.
+	UPROPERTY(Config, EditAnywhere, Category="Video", meta=(ClampMin="5", ClampMax="60", Units="Seconds"))
+	float ConfirmTimeoutSeconds = 15.f;
 };

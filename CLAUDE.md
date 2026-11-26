@@ -37,13 +37,21 @@ Done:
   - `Video.FrameRateLimit` goes through `UGameUserSettings::SetFrameRateLimit` + `ApplyNonResolutionSettings` (the `t.MaxFPS` cvar). Any non-zero value below 30 is raised to 30 by the applier. The saved value is kept.
   - `WUVideoResolutions::GetSupportedRefreshRates(Resolution)` (through `RHIGetAvailableResolutions`, guarded against a null `GDynamicRHI`) lists the monitor Hz for UI presets such as "Match monitor". It is informational only. The `RHI` module was added as a private dependency.
 
+- Phase 7: Apply/Confirm flow with timed Rollback.
+  - `ApplyConfirm` settings are applied immediately but not saved. The value from before the first unconfirmed change goes into `PendingRollback`, and a countdown starts (`UWUSettingsDeveloperSettings::ConfirmTimeoutSeconds`, default 15 s). Each new pending change restarts it.
+  - `ConfirmPendingSettings()` saves. `RevertPendingSettings()`, or the timeout, re-applies the rollback values. If there is no world, the value is saved directly, because nothing was applied.
+  - `SaveSettings` writes rollback values in place of pending ones, so the `.sav` never holds unconfirmed values. Quitting while pending therefore reverts on the next boot.
+  - The countdown uses `FTSTicker` (real time), because world and GameInstance timers freeze while the game is paused.
+  - The Blueprint API is `OnConfirmRequired(TimeoutSeconds)`, `OnPendingResolved(bConfirmed)`, `HasPendingConfirmation()` and `GetConfirmTimeRemaining()`.
+  - The sample has `WU_Confirm` and `WU_Revert` Exec commands.
+
 Registered settings (10):
 - `Audio.MasterVolume`, `MusicVolume`, `SFXVolume`, `VoiceVolume`, `UIVolume`: Float 0–1, default 1.0.
 - `Video.VSync`: Bool.
 - `Video.FrameRateLimit`: Int 0–360, where 0 means unlimited (the default). Immediate.
 - `Video.FOV`: Float 60–120, default 90.
-- `Video.WindowMode`: Enum 0–2 (Windowed/Borderless/Fullscreen), default Borderless, ApplyConfirm. It is applied immediately until Phase 7.
-- `Video.Resolution`: Resolution (`FIntPoint`). `(0,0)` means native desktop resolution, which is the default. ApplyConfirm, applied immediately until Phase 7.
+- `Video.WindowMode`: Enum 0–2 (Windowed/Borderless/Fullscreen), default Borderless, ApplyConfirm.
+- `Video.Resolution`: Resolution (`FIntPoint`). `(0,0)` means native desktop resolution, which is the default. ApplyConfirm.
 
 ## Testing notes
 
@@ -58,9 +66,9 @@ Next: **Video Display**, in this order:
 1. ~~Window Mode~~ (done in Phase 4).
 2. ~~Resolution~~ (done in Phase 5).
 3. ~~Refresh Rate~~, which became Frame Rate Limit in Phase 6, since the monitor Hz can't be selected. The Phase 4 fullscreen blur was caused by a non-native resolution in exclusive fullscreen and is gone since Phase 5.
-4. **Phase 7 (next):** Apply/Confirm flow with timed Rollback, for `EWUSettingApplyStrategy::ApplyConfirm`.
+4. ~~Apply/Confirm flow with timed Rollback~~ (done in Phase 7).
 
-After that:
+Next: pick from the list below. Video Display is complete, and `RequiresRestart` has no special handling yet.
 - **Gameplay:** FOV ownership. Apply on possess or on PlayerController ready, so it also works for network clients whose PC arrives after BeginPlay. Decide whether FOV belongs in Video or Gameplay.
 - **UI module** (`WUSettingsUI`, runtime UMG): C++ logic, Blueprint only for styling. Add a debounced save or an explicit Apply button, so sliders don't write the `.sav` on every tick.
 - **Remaining categories:** Graphics (scalability), Input (rebinding through EnhancedInput), Accessibility, Network, Developer.
@@ -73,4 +81,7 @@ Known limitations and tech debt:
 - A `.sav` from a newer plugin version is ignored, then overwritten on the next save.
 - `UWUAudioApplierConfig::FadeOutTime` is unused.
 - In Windowed mode, a resolution larger than the desktop produces a window bigger than the screen. The UI should only offer `WUVideoResolutions::GetWindowedResolutions()`.
+- Reverting WindowMode and Resolution together can switch the window twice, because each one calls `ApplyDisplaySettings`. A future fix is to batch display appliers.
+- Display settings are mirrored to GameUserSettings.ini even while pending. Quitting before confirming boots once in the unconfirmed mode, and then the `.sav` switches it back on BeginPlay.
+- `RequiresRestart` is treated like `Immediate`.
 - The sample PlayerController still logs to `LogTemp`. That is fine, since it is not part of the plugin.
