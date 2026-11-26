@@ -10,13 +10,13 @@ void WUSettingsDefaults::RegisterVideoSettings()
 	//Resolution
 	{
 		FWUSettingDescriptor Desc;
-		Desc.SettingName = "Video.Resolution";
-		Desc.DisplayName  = FText::FromString("Resolution");
-		Desc.Description = FText::FromString("Screen resolution. Ignored in Borderless (always uses the desktop resolution).");
-		Desc.Category     = EWUSettingCategory::Video;
-		Desc.Type = EWUSettingType::Resolution;
-		Desc.ApplyStrategy = EWUSettingApplyStrategy::ApplyConfirm;
-		Desc.DefaultValue = FWUSettingValue::MakeNativeResolution();
+		Desc.SettingName	= "Video.Resolution";
+		Desc.DisplayName	= FText::FromString("Resolution");
+		Desc.Description	= FText::FromString("Screen resolution. Ignored in Borderless (always uses the desktop resolution).");
+		Desc.Category		= EWUSettingCategory::Video;
+		Desc.Type			= EWUSettingType::Resolution;
+		Desc.ApplyStrategy	= EWUSettingApplyStrategy::ApplyConfirm;
+		Desc.DefaultValue	= FWUSettingValue::MakeNativeResolution();
 
 		FWUSettingsRegistry::Get().RegisterSetting(Desc);
 	}
@@ -24,18 +24,17 @@ void WUSettingsDefaults::RegisterVideoSettings()
 	// Window Mode
 	{
 		FWUSettingDescriptor Desc;
-		Desc.SettingName   = "Video.WindowMode";
-		Desc.DisplayName  = FText::FromString("Window Mode");
-		Desc.Description  = FText::FromString("Window display mode.");
-		Desc.Category     = EWUSettingCategory::Video;
-		Desc.Type         = EWUSettingType::Enum;
-		Desc.ApplyStrategy = EWUSettingApplyStrategy::ApplyConfirm;
-		Desc.MinValue     = 0.f;
-		Desc.MaxValue     = static_cast<float>(EWUWindowMode::Fullscreen); // last enum value
+		Desc.SettingName	= "Video.WindowMode";
+		Desc.DisplayName	= FText::FromString("Window Mode");
+		Desc.Description	= FText::FromString("Window display mode.");
+		Desc.Category		= EWUSettingCategory::Video;
+		Desc.Type			= EWUSettingType::Enum;
+		Desc.ApplyStrategy	= EWUSettingApplyStrategy::ApplyConfirm;
 
-		Desc.Step        = 1.f;
-		Desc.DefaultValue = FWUSettingValue::MakeEnum(
-			static_cast<uint8>(EWUWindowMode::Borderless));
+		Desc.MinValue = 0.f;
+		Desc.MaxValue = static_cast<float>(EWUWindowMode::Fullscreen); // last enum value
+		Desc.Step = 1.f;
+		Desc.DefaultValue = FWUSettingValue::MakeEnum(static_cast<uint8>(EWUWindowMode::Borderless));
 
 		FWUSettingsRegistry::Get().RegisterSetting(Desc);
 	}
@@ -43,31 +42,49 @@ void WUSettingsDefaults::RegisterVideoSettings()
 	// VSync
 	{
 		FWUSettingDescriptor Desc;
-		Desc.SettingName   = "Video.VSync";
-		Desc.DisplayName  = FText::FromString("VSync");
-		Desc.Description  = FText::FromString("Vertical synchronization.");
-		Desc.Category     = EWUSettingCategory::Video;
-		Desc.Type         = EWUSettingType::Bool;
-		Desc.ApplyStrategy = EWUSettingApplyStrategy::Immediate;
+		Desc.SettingName	= "Video.VSync";
+		Desc.DisplayName	= FText::FromString("VSync");
+		Desc.Description	= FText::FromString("Vertical synchronization.");
+		Desc.Category		= EWUSettingCategory::Video;
+		Desc.Type			= EWUSettingType::Bool;
+		Desc.ApplyStrategy	= EWUSettingApplyStrategy::Immediate;
 
-		Desc.DefaultValue = FWUSettingValue::MakeBool(true);
+		Desc.DefaultValue	= FWUSettingValue::MakeBool(true);
 		FWUSettingsRegistry::Get().RegisterSetting(Desc);
 	}
 
 	// FOV
 	{
 		FWUSettingDescriptor Desc;
-		Desc.SettingName   = "Video.FOV";
-		Desc.DisplayName  = FText::FromString("Field of View");
-		Desc.Description  = FText::FromString("Camera field of view.");
-		Desc.Category     = EWUSettingCategory::Video;
-		Desc.Type         = EWUSettingType::Float;
-		Desc.ApplyStrategy = EWUSettingApplyStrategy::Immediate;
+		Desc.SettingName	= "Video.FOV";
+		Desc.DisplayName	= FText::FromString("Field of View");
+		Desc.Description	= FText::FromString("Camera field of view.");
+		Desc.Category		= EWUSettingCategory::Video;
+		Desc.Type			= EWUSettingType::Float;
+		Desc.ApplyStrategy	= EWUSettingApplyStrategy::Immediate;
 
 		Desc.MinValue = 60.f;
 		Desc.MaxValue = 120.f;
 		Desc.Step     = 1.f;
 		Desc.DefaultValue = FWUSettingValue::MakeFloat(90.f);
+
+		FWUSettingsRegistry::Get().RegisterSetting(Desc);
+	}
+
+	// Frame Rate Limit
+	{
+		FWUSettingDescriptor Desc;
+		Desc.SettingName	= "Video.FrameRateLimit";
+		Desc.DisplayName	= FText::FromString("Frame Rate Limit");
+		Desc.Description	= FText::FromString("Maximum frames per second. 0 = unlimited.");
+		Desc.Category		= EWUSettingCategory::Video;
+		Desc.Type			= EWUSettingType::Int;
+		Desc.ApplyStrategy	= EWUSettingApplyStrategy::Immediate;
+
+		Desc.MinValue = 0.f;
+		Desc.MaxValue = 360.f;
+		Desc.Step = 1.f;
+		Desc.DefaultValue = FWUSettingValue::MakeInt(0);
 
 		FWUSettingsRegistry::Get().RegisterSetting(Desc);
 	}

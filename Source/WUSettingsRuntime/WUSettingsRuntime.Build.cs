@@ -23,7 +23,8 @@ public class WUSettingsRuntime : ModuleRules
             {
                 "Projects",
                 "AudioMixer",
-                "EnhancedInput"
+                "EnhancedInput",
+                "RHI"
             }
         );
     }

@@ -32,10 +32,15 @@ Done:
   - WindowMode and Resolution each set their part in GameUserSettings, then `ApplyDisplaySettings` applies the combined state once, idempotently against `GSystemResolution`.
   - In Fullscreen, an unsupported resolution falls back to the desktop resolution with a Warning. The saved value is kept.
   - `WUVideoResolutions` (in `Video/`) lists supported fullscreen modes and windowed sizes, for validation now and the UI later.
+- Phase 6: Frame Rate Limit (replaces the planned "Refresh Rate" setting).
+  - UE 5.8's D3D12 RHI always passes `RefreshRate = 0/0` to DXGI (`WindowsD3D12Viewport.cpp`, `D3D12Viewport.cpp`), so DXGI picks the fullscreen refresh rate itself. A plugin can't select the monitor Hz without engine changes.
+  - `Video.FrameRateLimit` goes through `UGameUserSettings::SetFrameRateLimit` + `ApplyNonResolutionSettings` (the `t.MaxFPS` cvar). Any non-zero value below 30 is raised to 30 by the applier. The saved value is kept.
+  - `WUVideoResolutions::GetSupportedRefreshRates(Resolution)` (through `RHIGetAvailableResolutions`, guarded against a null `GDynamicRHI`) lists the monitor Hz for UI presets such as "Match monitor". It is informational only. The `RHI` module was added as a private dependency.
 
-Registered settings (9):
+Registered settings (10):
 - `Audio.MasterVolume`, `MusicVolume`, `SFXVolume`, `VoiceVolume`, `UIVolume`: Float 0–1, default 1.0.
 - `Video.VSync`: Bool.
+- `Video.FrameRateLimit`: Int 0–360, where 0 means unlimited (the default). Immediate.
 - `Video.FOV`: Float 60–120, default 90.
 - `Video.WindowMode`: Enum 0–2 (Windowed/Borderless/Fullscreen), default Borderless, ApplyConfirm. It is applied immediately until Phase 7.
 - `Video.Resolution`: Resolution (`FIntPoint`). `(0,0)` means native desktop resolution, which is the default. ApplyConfirm, applied immediately until Phase 7.
@@ -45,14 +50,15 @@ Registered settings (9):
 - Window mode and resolution can't be tested in PIE. Use **Standalone Game**.
 - The Standalone log does not appear in the editor Output Log. Add `-log` to Editor Preferences → Play → Additional Launch Parameters, or read `Saved/Logs/WUSettingsSample.log`.
 - The editor launches Standalone with `-windowed -ResX/-ResY`, so it always starts in a small window and switches to the saved mode on BeginPlay. Packaged builds start directly in the saved mode.
+- Frame rate can be tested in PIE with `stat fps`. Turn VSync off first, because it caps FPS at the monitor refresh rate. With `FrameRateLimit 0` the editor still caps at about 120 FPS (`SmoothedFrameRateRange` in `[/Script/UnrealEd.EditorEngine]`). Standalone and packaged builds have no such cap.
 
 ## Roadmap
 
 Next: **Video Display**, in this order:
 1. ~~Window Mode~~ (done in Phase 4).
 2. ~~Resolution~~ (done in Phase 5).
-3. Refresh Rate. In Phase 4, exclusive Fullscreen at the native 1920×1080 looked blurry and triggered an OS/driver notice. The likely cause is a refresh rate mismatch, which needs to be checked.
-4. Apply/Confirm flow with timed Rollback, for `EWUSettingApplyStrategy::ApplyConfirm`.
+3. ~~Refresh Rate~~, which became Frame Rate Limit in Phase 6, since the monitor Hz can't be selected. The Phase 4 fullscreen blur was caused by a non-native resolution in exclusive fullscreen and is gone since Phase 5.
+4. **Phase 7 (next):** Apply/Confirm flow with timed Rollback, for `EWUSettingApplyStrategy::ApplyConfirm`.
 
 After that:
 - **Gameplay:** FOV ownership. Apply on possess or on PlayerController ready, so it also works for network clients whose PC arrives after BeginPlay. Decide whether FOV belongs in Video or Gameplay.

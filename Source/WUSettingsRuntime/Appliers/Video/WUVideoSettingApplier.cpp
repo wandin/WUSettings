@@ -10,6 +10,9 @@
 
 namespace
 {
+	// Non-zero limits below this make the game (and the manu needed to undo them) barely usable
+	constexpr int32 MinFrameRateLimit = 30;
+	
 	EWindowMode::Type ToEngineWindowMode(EWUWindowMode Mode)
 	{
 		switch (Mode)
@@ -78,6 +81,17 @@ void FWUVideoSettingApplier::Apply(UWorld* World, const FWUSettingDescriptor& De
 		ApplyResolution(World, Value.ResolutionValue);
 		return;
 	}
+
+	if (Descriptor.SettingName == TEXT("Video.FrameRateLimit"))
+	{
+		if (Value.Type != EWUSettingType::Int)
+		{
+			UE_LOG(LogWUSettingsVideo, Warning, TEXT("WUVideo: FrameRateLimit setting must be int"));
+			return;
+		}
+		ApplyFrameRateLimit(Value.IntValue);
+		return;
+	}
 }
 
 void FWUVideoSettingApplier::ApplyVSync(bool bEnabled)
@@ -94,6 +108,32 @@ void FWUVideoSettingApplier::ApplyVSync(bool bEnabled)
 	// Only non-resolution settings; resolution/window mode go through the ApplyConfirm flow.
 	Settings->ApplyNonResolutionSettings();
 	UE_LOG(LogWUSettingsVideo, Log, TEXT("WUVideo: Vsync set to %s"), bEnabled ? TEXT("Enabled") : TEXT("Disabled"));
+}
+
+void FWUVideoSettingApplier::ApplyFrameRateLimit(int32 Limit)
+{
+	UGameUserSettings* Settings = GEngine ? GEngine->GetGameUserSettings() : nullptr;
+	if (!Settings)
+	{
+		UE_LOG(LogWUSettingsVideo, Warning, TEXT("WUVideo: Failed to get GameUserSettings"));
+		return;
+	}
+
+	// 0 = unlimited; any other value is raised to MinFrameRateLimit
+	const int32 EffectiveLimit = Limit <= 0 ? 0 : FMath::Max(Limit, MinFrameRateLimit);
+
+	Settings->SetFrameRateLimit(static_cast<float>(EffectiveLimit));
+	// Pushes the limit to the t.MaxFPS cvar; no resolution/window change involved
+	Settings->ApplyNonResolutionSettings();
+
+	if (EffectiveLimit == 0)
+	{
+		UE_LOG(LogWUSettingsVideo, Log, TEXT("WUVideo: Frame rate limit set to Unlimited"));
+	}
+	else
+	{
+		UE_LOG(LogWUSettingsVideo, Log, TEXT("WUVideo: Frame rate limit set to %d"), EffectiveLimit);
+	}
 }
 
 void FWUVideoSettingApplier::ApplyFOV(UWorld* World, float FOV)

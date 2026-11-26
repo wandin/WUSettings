@@ -13,6 +13,7 @@ public:
 
 private:
 	void ApplyVSync(bool bEnabled);
+	void ApplyFrameRateLimit(int32 Limit);
 	void ApplyFOV(UWorld* World, float FOV);
 
 	/**

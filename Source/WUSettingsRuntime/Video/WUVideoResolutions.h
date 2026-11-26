@@ -20,4 +20,10 @@ namespace WUVideoResolutions
 	// True if Resolution is a supported fullscreen mode.
 	// Also true when the list can't be queried (e.g. null RHI), so we never block a value we can't verify.
 	WUSETTINGSRUNTIME_API bool IsSupportedFullscreenResolution(const FIntPoint& Resolution);
+
+	// Refresh rates (Hz) the monitor supports at Resolution. Sorted ascending, no duplicates.
+	// Empty when unknown (e.g. no RHI). Informational only: UE lets DXGI pick the fullscreen refresh rate,
+	// so use this to offer frame rate limits options (e.g. "Match monitor"), not to switch display modes.
+	WUSETTINGSRUNTIME_API TArray<int32> GetSupportedRefreshRates(const FIntPoint& Resolution);
+	
 }

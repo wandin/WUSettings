@@ -21,7 +21,7 @@ Source/WUSettingsRuntime/
   Settings/        UWUSettingsDeveloperSettings (Project Settings > WU Settings)
   SettingsCore/    FWUSettingDescriptor, FWUSettingsRegistry, enums
   Subsystems/      UWUSettingsSubsystem (GameInstance), UWUSettingsWorldSubsystem
-  Video/           Video-specific types (EWUWindowMode) and WUVideoResolutions (supported modes)
+  Video/           Video-specific types (EWUWindowMode) and WUVideoResolutions (supported modes, refresh rates)
   Public/ Private/ Module class only
 ```
 
@@ -59,6 +59,7 @@ World BeginPlay ──> UWUSettingsWorldSubsystem ──> ApplyAllRegisteredSett
   - Display settings are skipped in PIE, because they would affect the editor window. Test them in Standalone Game.
 - **Coupled settings are applied together.** WindowMode and Resolution each write their part into GameUserSettings, then a single `ApplyDisplaySettings` applies the combined state, so the window never switches twice.
 - **UI offers only valid options.** Dropdowns are fed by query helpers such as `WUVideoResolutions`, and the applier still validates values from saves or the console. For example, an unsupported fullscreen resolution falls back to the desktop resolution.
+- **Expose only what the engine can actually do.** Before adding a setting, check that the engine honors it, for example that the RHI really uses the value. A setting that silently does nothing is worse than no setting. That check is why "Refresh Rate" became Frame Rate Limit.
 - **Engine types stay out of the public API.** Expose our own enums (such as `EWUWindowMode`) and translate them to engine types inside the applier.
 - **Setting names** use the form `Category.Name`, for example `Audio.MasterVolume` or `Video.FOV`.
 - **Plugin Content** holds only shipping assets. Test assets live in the Sample project.
