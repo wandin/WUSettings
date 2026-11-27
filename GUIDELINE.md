@@ -26,11 +26,16 @@ Source/WUSettingsRuntime/
 
 Source/WUSettingsUI/
   Logging/         LogWUSettingsUI
-  Rows/            UWUSettingRow (base) and one subclass per control: Bool, Slider, Enum
+  Rows/            UWUSettingRow (base) and one subclass per control: Bool, Slider, Enum, Resolution
+  Screens/         UWUSettingsScreen (builds rows per category), UWUSettingsConfirmDialog (Keep/Revert popup)
   Public/ Private/ Module class only
 ```
 
-**UI rows:** each row is an abstract C++ class whose controls are `BindWidget` members. Blueprint children only add layout and style. A row reads and writes through `UWUSettingsSubsystem` and refreshes on `OnSettingChanged`, so external changes (console, revert) show up. Programmatic control updates must not commit. Use setters that don't fire change events, or ignore `ESelectInfo::Direct`.
+**UI rows:** each row is an abstract C++ class whose controls are `BindWidget` members. Blueprint children only add layout and style. A row reads and writes through `UWUSettingsSubsystem` and refreshes on `OnSettingChanged`, so external changes (console, revert) show up. A row that depends on another setting reacts in `OnOtherSettingChanged`, as Resolution does with WindowMode. Programmatic control updates must not commit. Use setters that don't fire change events, or ignore `ESelectInfo::Direct`.
+
+**UI screen:** `UWUSettingsScreen` creates one row per registered setting of the current category, in registration order, so the order of the `Register*Settings` calls is the menu order. The row class for each setting type is set in Class Defaults. New settings appear in the menu without any UI code.
+
+**Native tick:** UMG checks `DisableNativeTick` on each native class without inheriting it, so a C++ `UUserWidget` subclass without the meta ticks every frame. Add `meta=(DisableNativeTick)` to every widget class that doesn't need `NativeTick`. The confirm dialog ticks on purpose, for its countdown.
 
 Includes always use the module-rooted path: `#include "WUSettingsRuntime/SettingsCore/WUSettingsRegistry.h"`.
 

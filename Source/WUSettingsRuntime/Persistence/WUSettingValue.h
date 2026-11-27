@@ -75,4 +75,22 @@ struct WUSETTINGSRUNTIME_API FWUSettingValue
 	{
 		return MakeResolution(0,0);
 	}
+
+	bool operator == (const FWUSettingValue& Other) const
+	{
+		if (Type != Other.Type)
+		{
+			return false;
+		}
+
+		switch (Type)
+		{
+			case EWUSettingType::Bool:			return BoolValue == Other.BoolValue;
+			case EWUSettingType::Int:			return IntValue == Other.IntValue;
+			case EWUSettingType::Float:			return FMath::IsNearlyEqual(FloatValue, Other.FloatValue);
+			case EWUSettingType::Enum:			return EnumValue == Other.EnumValue;
+			case EWUSettingType::Resolution:	return ResolutionValue == Other.ResolutionValue;
+			default:							return false;
+		}
+	}
 };

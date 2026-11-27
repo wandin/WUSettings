@@ -51,6 +51,11 @@ public:
 	UFUNCTION(BlueprintPure, Category = "WUSettings")
 	float GetConfirmTimeRemaining() const;
 
+	// Sets every setting of Category back to its default. Only values that differ are changed,
+	// so unchanged ApplyConfirm settings don't trigger a confirmation.
+	UFUNCTION(BlueprintCallable, Category = "WUSettings")
+	void ResetCategoryToDefaults(EWUSettingCategory Category);
+	
 	// Broadcast when ApplyConfirm settings were applied and need confirmation (also when the timer restarts).
 	UPROPERTY(BlueprintAssignable, Category="WUSettings")
 	FWUOnConfirmRequired OnConfirmRequired;

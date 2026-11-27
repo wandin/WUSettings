@@ -6,21 +6,7 @@
 #include "WUSettingsRuntime/Defaults/WUSettingsDefaults.h"
 
 void WUSettingsDefaults::RegisterVideoSettings()
-{
-	//Resolution
-	{
-		FWUSettingDescriptor Desc;
-		Desc.SettingName	= "Video.Resolution";
-		Desc.DisplayName	= FText::FromString("Resolution");
-		Desc.Description	= FText::FromString("Screen resolution. Ignored in Borderless (always uses the desktop resolution).");
-		Desc.Category		= EWUSettingCategory::Video;
-		Desc.Type			= EWUSettingType::Resolution;
-		Desc.ApplyStrategy	= EWUSettingApplyStrategy::ApplyConfirm;
-		Desc.DefaultValue	= FWUSettingValue::MakeNativeResolution();
-
-		FWUSettingsRegistry::Get().RegisterSetting(Desc);
-	}
-	
+{	
 	// Window Mode
 	{
 		FWUSettingDescriptor Desc;
@@ -46,6 +32,20 @@ void WUSettingsDefaults::RegisterVideoSettings()
 		FWUSettingsRegistry::Get().RegisterSetting(Desc);
 	}
 
+	//Resolution
+	{
+		FWUSettingDescriptor Desc;
+		Desc.SettingName	= "Video.Resolution";
+		Desc.DisplayName	= FText::FromString("Resolution");
+		Desc.Description	= FText::FromString("Screen resolution. Ignored in Borderless (always uses the desktop resolution).");
+		Desc.Category		= EWUSettingCategory::Video;
+		Desc.Type			= EWUSettingType::Resolution;
+		Desc.ApplyStrategy	= EWUSettingApplyStrategy::ApplyConfirm;
+		Desc.DefaultValue	= FWUSettingValue::MakeNativeResolution();
+
+		FWUSettingsRegistry::Get().RegisterSetting(Desc);
+	}
+
 	// VSync
 	{
 		FWUSettingDescriptor Desc;
@@ -57,24 +57,6 @@ void WUSettingsDefaults::RegisterVideoSettings()
 		Desc.ApplyStrategy	= EWUSettingApplyStrategy::Immediate;
 
 		Desc.DefaultValue	= FWUSettingValue::MakeBool(true);
-		FWUSettingsRegistry::Get().RegisterSetting(Desc);
-	}
-
-	// FOV
-	{
-		FWUSettingDescriptor Desc;
-		Desc.SettingName	= "Video.FOV";
-		Desc.DisplayName	= FText::FromString("Field of View");
-		Desc.Description	= FText::FromString("Camera field of view.");
-		Desc.Category		= EWUSettingCategory::Video;
-		Desc.Type			= EWUSettingType::Float;
-		Desc.ApplyStrategy	= EWUSettingApplyStrategy::Immediate;
-
-		Desc.MinValue = 60.f;
-		Desc.MaxValue = 120.f;
-		Desc.Step     = 1.f;
-		Desc.DefaultValue = FWUSettingValue::MakeFloat(90.f);
-
 		FWUSettingsRegistry::Get().RegisterSetting(Desc);
 	}
 
@@ -92,6 +74,24 @@ void WUSettingsDefaults::RegisterVideoSettings()
 		Desc.MaxValue = 360.f;
 		Desc.Step = 1.f;
 		Desc.DefaultValue = FWUSettingValue::MakeInt(0);
+
+		FWUSettingsRegistry::Get().RegisterSetting(Desc);
+	}
+
+	// FOV
+	{
+		FWUSettingDescriptor Desc;
+		Desc.SettingName	= "Video.FOV";
+		Desc.DisplayName	= FText::FromString("Field of View");
+		Desc.Description	= FText::FromString("Camera field of view.");
+		Desc.Category		= EWUSettingCategory::Video;
+		Desc.Type			= EWUSettingType::Float;
+		Desc.ApplyStrategy	= EWUSettingApplyStrategy::Immediate;
+
+		Desc.MinValue = 60.f;
+		Desc.MaxValue = 120.f;
+		Desc.Step     = 1.f;
+		Desc.DefaultValue = FWUSettingValue::MakeFloat(90.f);
 
 		FWUSettingsRegistry::Get().RegisterSetting(Desc);
 	}

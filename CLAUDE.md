@@ -55,6 +55,14 @@ Done:
     - `UWUSettingRowEnum` uses a `ComboBox` and ignores `ESelectInfo::Direct`.
     - Blueprint children only provide layout through `BindWidget`.
   - Test widgets live in the Sample at `Content/WUSettingsTest/`: `WBP_TestRow*` and `WBP_TestSettings`, shown from the Level Blueprint.
+- Phase 9: UI screen.
+  - Runtime: `FWUSettingValue::operator==` (Float compared with `IsNearlyEqual`). `UWUSettingsSubsystem::ResetCategoryToDefaults(Category)` (BlueprintCallable) only changes values that differ from the default, so resetting doesn't open the confirm popup when nothing display-related changed.
+  - Runtime: Video settings are registered in menu order: WindowMode, Resolution, VSync, FrameRateLimit, FOV.
+  - `UWUSettingRowResolution`: a combo box whose options follow the window mode. Borderless shows only "Native (WxH)" and is disabled. Fullscreen lists the supported modes and Windowed lists the sizes that fit the desktop. A saved value that isn't in the list (for example set from the console) is added so it still shows. The row rebuilds when `Video.WindowMode` changes.
+  - `UWUSettingsScreen` (`WUSettingsUI/Screens`): builds rows for the current category from the Registry using the row classes in Class Defaults. It has `SetCategory`, `GetAvailableCategories`, `ResetCurrentCategory`, an optional `ResetButton` and the `OnCategoryChanged` event for tab highlighting. Tabs are made in Blueprint.
+  - `UWUSettingsConfirmDialog`: manages itself through `OnConfirmRequired` and `OnPendingResolved`, has Keep and Revert buttons and a countdown text, and focuses Keep when it opens. It's the only widget class that ticks.
+  - The base row exposes `GetSettingsSubsystem()`. All rows and the screen use `meta=(DisableNativeTick)`.
+  - Sample test assets: `WBP_TestRowResolution`, `WBP_TestConfirmDialog` and `WBP_TestSettingsScreen`. The Level Blueprint now shows `WBP_TestSettingsScreen`.
 
 Registered settings (10):
 - `Audio.MasterVolume`, `MusicVolume`, `SFXVolume`, `VoiceVolume`, `UIVolume`: Float 0–1, default 1.0.
@@ -73,15 +81,15 @@ Registered settings (10):
 
 ## Roadmap
 
-Phases 1–8 are done. Phases 4–7 covered Video Display: Window Mode, Resolution, Frame Rate Limit, and Apply/Confirm.
+Phases 1–9 are done. Phases 4–7 covered Video Display: Window Mode, Resolution, Frame Rate Limit, and Apply/Confirm. Phases 8–9 covered the UI: rows, the screen and the confirm popup.
 
 The UI comes before the remaining categories. It is data-driven (rows are built from the Registry), so later settings appear in the menu automatically. Building it now also shows what the descriptors are missing.
 
 | Phase | Content |
 |---|---|
 | ~~8~~ | (Done) UI base. Runtime prep: Enum option labels in the descriptor, an `OnSettingChanged` event, API exports, and `LogWUSettingsUI` moved to the UI module. Row widgets: a base row plus Bool (checkbox), Slider (Float/Int; it commits on release, so the `.sav` isn't written on every tick) and Enum (combo box). |
-| **9 (next)** | UI screen. Resolution row (options depend on the window mode), a screen that builds rows per category from the Registry, the confirm popup with a countdown, and Reset to defaults. |
-| 10 | Graphics: overall quality preset, scalability groups, resolution scale. |
+| ~~9~~ | (Done) UI screen. Resolution row (options depend on the window mode), a screen that builds rows per category from the Registry, the confirm popup with a countdown, and Reset to defaults. |
+| **10 (next)** | Graphics: overall quality preset, scalability groups, resolution scale. |
 | 11 | Gameplay: FOV applied on possess (works for network clients), mouse sensitivity and invert. Decide whether FOV belongs in Video or Gameplay. |
 | 12–13 | Input: rebinding through EnhancedInput (`UEnhancedInputUserSettings`) and the rebinding UI. |
 | 14 | Accessibility: subtitles, colorblind mode, text size. |
@@ -97,7 +105,7 @@ Known limitations and tech debt:
 - Int and Float descriptors must set `MinValue` and `MaxValue`. The defaults are 0–1 and values get clamped to that range.
 - A `.sav` from a newer plugin version is ignored, then overwritten on the next save.
 - `UWUAudioApplierConfig::FadeOutTime` is unused.
-- In Windowed mode, a resolution larger than the desktop produces a window bigger than the screen. The UI should only offer `WUVideoResolutions::GetWindowedResolutions()`.
+- In Windowed mode, a resolution larger than the desktop produces a window bigger than the screen. The Resolution row offers only `WUVideoResolutions::GetWindowedResolutions()`, but the console and Blueprint can still set one.
 - Reverting WindowMode and Resolution together can switch the window twice, because each one calls `ApplyDisplaySettings`. A future fix is to batch display appliers.
 - Display settings are mirrored to GameUserSettings.ini even while pending. Quitting before confirming boots once in the unconfirmed mode, and then the `.sav` switches it back on BeginPlay.
 - `RequiresRestart` is treated like `Immediate`.

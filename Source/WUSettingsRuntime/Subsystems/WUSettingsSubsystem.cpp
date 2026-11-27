@@ -184,6 +184,30 @@ float UWUSettingsSubsystem::GetConfirmTimeRemaining() const
 	return static_cast<float>(FMath::Max(0.0, ConfirmDeadline - FPlatformTime::Seconds()));
 }
 
+void UWUSettingsSubsystem::ResetCategoryToDefaults(EWUSettingCategory Category)
+{
+	int32 ResetCount = 0;
+	for (const FWUSettingDescriptor& Descriptor : FWUSettingsRegistry::Get().GetAllSettings())
+	{
+		if (Descriptor.Category != Category)
+		{
+			continue;
+		}
+
+		FWUSettingValue Current;
+		if (GetSettingValue(Descriptor.SettingName, Current) && Current == Descriptor.DefaultValue)
+		{
+			continue;
+		}
+
+		if (SetSettingValue(Descriptor.SettingName, Descriptor.DefaultValue))
+		{
+			++ResetCount;
+		}
+	}
+	UE_LOG(LogWUSettings, Log, TEXT("Reset %d setting(s) in category %s to defaults."), ResetCount, *UEnum::GetValueAsString(Category));
+}
+
 void UWUSettingsSubsystem::StartConfirmTimer()
 {
 	// Every new unconfirmed change restarts the countdown

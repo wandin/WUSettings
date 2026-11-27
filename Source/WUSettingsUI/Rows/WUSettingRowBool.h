@@ -10,7 +10,7 @@ class UCheckBox;
 /**
  * Bool setting shown as a checkbox.
  */
-UCLASS(Abstract)
+UCLASS(Abstract, meta=(DisableNativeTick))
 class WUSETTINGSUI_API UWUSettingRowBool : public UWUSettingRow
 {
 	GENERATED_BODY()

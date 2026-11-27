@@ -37,6 +37,11 @@ bool UWUSettingRow::GetCurrentValue(FWUSettingValue& OutValue) const
 	return bHasDescriptor && Subsystem.IsValid() && Subsystem->GetSettingValue(SettingName, OutValue);
 }
 
+UWUSettingsSubsystem* UWUSettingRow::GetSettingsSubsystem() const
+{
+	return Subsystem.Get();
+}
+
 void UWUSettingRow::CommitValue(const FWUSettingValue& Value)
 {
 	if (!bHasDescriptor || !Subsystem.IsValid())

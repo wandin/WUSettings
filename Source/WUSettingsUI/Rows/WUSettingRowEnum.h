@@ -10,7 +10,7 @@
 class UComboBoxString;
 
 // Enum setting shown as a combo box, labeled with the descriptor's EnumOptions.
-UCLASS(Abstract)
+UCLASS(Abstract, meta=(DisableNativeTick))
 class WUSETTINGSUI_API UWUSettingRowEnum : public UWUSettingRow
 {
 	GENERATED_BODY()

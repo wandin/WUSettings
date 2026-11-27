@@ -14,7 +14,7 @@ class UTextBlock;
  * While dragging only the value text updates; the value is committed (and saved) on release.
  * Keyboard/gamepad steps commit immediately.
  */
-UCLASS(Abstract)
+UCLASS(Abstract, meta=(DisableNativeTick))
 class WUSETTINGSUI_API UWUSettingRowSlider : public UWUSettingRow
 {
 	GENERATED_BODY()

@@ -15,7 +15,7 @@ class UWUSettingsSubsystem;
  * with UWUSettingsSubsystem (including external changes such as console commands or Apply/Confirm reverts).
  * Subclasses own the control; Blueprint children only provide layout and styling.
  */
-UCLASS(Abstract)
+UCLASS(Abstract, meta=(DisableNativeTick))
 class WUSETTINGSUI_API UWUSettingRow : public UUserWidget
 {
 	GENERATED_BODY()
@@ -46,6 +46,8 @@ protected:
 	bool HasDescriptor() const { return bHasDescriptor; }
 	bool GetCurrentValue(FWUSettingValue& OutValue) const;
 
+	UWUSettingsSubsystem* GetSettingsSubsystem() const;
+	
 	// Sends the value to the Subsystem. On success the Subsystem's OnSettingChanged refreshes the row
 	// with the sanitized value; on rejection the row refreshes itself to undo the control change.
 	void CommitValue(const FWUSettingValue& Value);
